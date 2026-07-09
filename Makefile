@@ -89,3 +89,19 @@ external_contributor: ## Generates an empty ApiCredentials.swift so the app buil
 	@cp podcasts/Credentials/ApiCredentials.tpl podcasts/Credentials/LocalApiCredentials.swift
 	@sed -i '' 's/%{.*}//' "podcasts/Credentials/LocalApiCredentials.swift"
 	$(info You're ready to build the app, go ahead! 🎙)
+
+DEVICE_ID ?= 68584880-5010-5FD9-B899-FBCB5273FA46
+
+device: ## Builds, installs and launches on the personal iPhone (free-team signing; profile expires after 7 days — just re-run)
+	xcodebuild -project podcasts.xcodeproj \
+	    -scheme pocketcasts \
+	    -configuration Debug \
+	    -destination 'platform=iOS,id=$(DEVICE_ID)' \
+	    PRODUCT_BUNDLE_IDENTIFIER_ROOT=com.mdbraber.podcasts \
+	    DEVELOPMENT_TEAM=D3S5M885YQ \
+	    CODE_SIGN_STYLE=Automatic \
+	    PROVISIONING_PROFILE_SPECIFIER= \
+	    "CODE_SIGN_ENTITLEMENTS=$(CURDIR)/config/PocketCasts.device.entitlements" \
+	    -allowProvisioningUpdates build
+	xcrun devicectl device install app --device $(DEVICE_ID) ~/Library/Developer/Xcode/DerivedData/podcasts-*/Build/Products/Debug-iphoneos/podcasts.app
+	xcrun devicectl device process launch --device $(DEVICE_ID) com.mdbraber.podcasts
